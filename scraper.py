@@ -1,4 +1,7 @@
+import smtplib
 import pandas as pd
+import os
+import json
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
@@ -42,6 +45,35 @@ def parse_video(video):
     'channel': channel_name,
     'description': description
   }
+
+def send_email(body):
+
+  try:
+    server_ssl = smtplib.SMTP_SSL('smtp.gmail.com', 465)
+    server_ssl.ehlo()
+  
+    SENDER_EMAIL = 'datascrape.platform@gmail.com'
+    RECEIVER_EMAIL = 'datascrape.platform@gmail.com'
+    SENDER_PASSWORD = 'ekuhyttlezxilsce'
+    print(SENDER_PASSWORD)
+  
+    subject = 'Youtube Trending Videos'
+  
+    email_text = f"""\
+    From: {SENDER_EMAIL}
+    To: {RECEIVER_EMAIL}
+    Subject: {subject}
+    
+    {body}
+    
+    """
+  
+    server_ssl.login(SENDER_EMAIL, SENDER_PASSWORD)
+    server_ssl.sendmail(SENDER_EMAIL, RECEIVER_EMAIL, email_text)
+    server_ssl.close()
+    
+  except:
+    print('Something went wrong...')
   
 if __name__ == "__main__":
   print('Creating driver')
@@ -60,5 +92,11 @@ if __name__ == "__main__":
   print(videos_data)
   print('Save the data to a CSV')
   videos_df = pd.DataFrame(videos_data)
-  print(videos_df)
+  # print(videos_df)
   videos_df.to_csv('trending.csv', index=False)
+
+  print('Send an email with the results')
+  body = json.dumps(videos_data, indent=2)
+  print(body)
+  send_email(body)
+  
